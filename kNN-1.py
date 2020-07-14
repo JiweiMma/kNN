@@ -18,7 +18,6 @@ def filematrix(filename):
     return returnMat,classLabelVector
 
 #数据的可视化
-# -*- coding: UTF-8 -*-
 
 from matplotlib.font_manager import FontProperties
 import matplotlib.lines as mlines
