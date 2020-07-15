@@ -1,5 +1,23 @@
 from numpy import shape, tile
 from numpy.ma import zeros
+import operator
+
+def classify0(inX,dataSet,labels,k):  #inX输入向量，dataSet是训练样本集矩阵，labels是训练样本的标签向量，K分类的值
+    dataSetSize=dataSet.shape[0] #训练样本的个数
+    diffMat=np.tile(inX,(dataSetSize,1))-dataSet
+    sqDist=(diffMat**2).sum(axis=1)  #1表述行，0表述列
+    dist=sqDist**0.5  #得到输入向量与各训练样本的欧式距离
+    sortedIndicies=dist.argsort() #距离从小到大排序，返回对应的列表索引值
+    classCount={} #eg :  classCount{A:2}
+    for i in range(k):
+        label=labels[sortedIndicies[i]]  #获得类别标签
+    classCount[label]=classCount.get(label,0)+1
+    sortedClassCount=sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
+    #key=operator.itemgetter(1)根据字典的值进行排序
+    #key=operator.itemgetter(0)根据字典的键进行排序
+    #降序排列  reverse
+    return sortedClassCount[0][0]
+
 #将数据的格式，改变为分类器可以接受的格式。
 #输入为文件名字符串，输出为训练样本矩阵和类标签向量。
 def filematrix(filename):
@@ -90,6 +108,26 @@ def autoNorm(dataSet):
     normDataSet=normDataSet/tile(ranges,(m,1))
     return normDataSet,ranges,minVals
 
+#验证分类器的正确率，本次数据没有排序，所以可以随机选择10%的数据进行测试
+def datingClassTest():
+    hoRatio=0.10#选择10%的测试数据
+    filename="DataTestSet2.txt"
+    datingMat,datingLabels=filematrix(filename)#将返回的特征矩阵和分类向量分别存储
+    normMat,ranges,minVals=autoNorm(datingDataMat)#归一化特征值
+    m=normMat.shape[0]#获取行数,本次为1000
+    numTestVecs=int(m*hoRatio)#得到10%的测试数据的个数
+    errorCount=0.0#分类错误的计数，初始化为0
+    for i in range(numTestVecs):
+        #前numTestVecs个数据作为测试集，后m-numTestVecs作为训练集
+        classiferResult=classify0(normMat[i,:],normMat[numTestVecs:m,:],datingLabels[numTestVecs:m],4)
+        print("分类结果：%d\t真实类别：%d" %(classiferResult,datingLabels[i]))
+        if(classiferResult !=datingLabels[i]):
+            errorCount+=1.0
+    print("错误率:%f%%" %(errorCount/float(numTestVecs)*100))
+
+
+
+
 
 if __name__=='__main__':
     filename="DataTestSet2.txt"
@@ -101,3 +139,4 @@ if __name__=='__main__':
     print(normDataSet)
     print(ranges)
     print(minVals)
+    datingClassTest()
